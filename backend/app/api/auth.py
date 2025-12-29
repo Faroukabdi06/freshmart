@@ -1,16 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime,timedelta
+from uuid import UUID
+
 
 from app.crud.user import create_user,get_user,authenticate_user
 from app.schemas.user import UserCreate,UserResponse,UserLogin
 from app.cores.database import get_db
 from app.cores.config import Config
-from app.utils.security import create_access_token
+from app.utils.security import create_access_token,get_current_user
 
 router = APIRouter(tags=["auth"])
 
-@router.post("/signup", response_model=UserResponse)
+@router.post("/signup")
 def signup(user_in:UserCreate, db:Session=Depends(get_db)):
 
     check_user = get_user(db,user_in.email)
@@ -21,7 +23,7 @@ def signup(user_in:UserCreate, db:Session=Depends(get_db)):
             detail = "user already exists"
         )
     user = create_user(db,user_in)
-    return user
+    return "User created successfully"
 
 @router.post("/login")
 def login(user_in:UserLogin, db:Session=Depends(get_db)):
@@ -39,3 +41,8 @@ def login(user_in:UserLogin, db:Session=Depends(get_db)):
         expires = access_token_expires
     )
     return { "access_token":access_token, "token_type":"bearer"}
+
+@router.get("/me", response_model=UserResponse)
+def get_me(current_user: UserResponse = Depends(get_current_user)):
+    return current_user
+
