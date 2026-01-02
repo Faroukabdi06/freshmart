@@ -48,7 +48,7 @@ def one_category(id:UUID,current_user:UserResponse=Depends(get_current_user),db:
     if not category:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
-            detail = "content not found"
+            detail = "Category not found"
         )
     return category
 
